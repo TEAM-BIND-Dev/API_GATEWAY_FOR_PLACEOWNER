@@ -1,0 +1,49 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 17492
+
+# CORS 설정 - 개발 환경
+cors:
+  allowed-origins: "*"
+
+# 개발 환경 서비스 URL (환경변수로 오버라이드)
+service:
+  auth:
+    url: ${AUTH_URL:localhost}
+    port: ${AUTH_PORT:8080}
+  image:
+    url: ${IMAGE_URL:localhost}
+    port: ${IMAGE_PORT:8081}
+  place-info:
+    url: ${PLACE_INFO_URL:localhost}
+    port: ${PLACE_INFO_PORT:8082}
+  room-info:
+    url: ${ROOM_INFO_URL:localhost}
+    port: ${ROOM_INFO_PORT:8083}
+  lee-yong-gwan-lee:
+    url: ${LEE_YONG_GWAN_LEE_URL:localhost}
+    port: ${LEE_YONG_GWAN_LEE_PORT:8084}
+  ye-yak-hae-yo:
+    url: ${YE_YAK_HAE_YO_URL:localhost}
+    port: ${YE_YAK_HAE_YO_PORT:8085}
+  ye-yak-manage:
+    url: ${YE_YAK_MANAGE_URL:localhost}
+    port: ${YE_YAK_MANAGE_PORT:8086}
+  coupon:
+    url: ${COUPON_URL:localhost}
+    port: ${COUPON_PORT:8087}
+  chat:
+    url: ${CHAT_URL:localhost}
+    port: ${CHAT_PORT:8088}
+  notification:
+    url: ${NOTIFICATION_URL:localhost}
+    port: ${NOTIFICATION_PORT:8089}
+
+logging:
+  level:
+    root: INFO
+    com.teambind: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    io.github.resilience4j: DEBUG

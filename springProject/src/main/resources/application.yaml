@@ -1,0 +1,255 @@
+server:
+  port: ${SERVER_PORT:30090}
+
+spring:
+  application:
+    name: placeowner-gateway
+  profiles:
+    active: dev
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:17492}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # Auth Service - 점주 인증
+            - id: auth-service
+              uri: http://${service.auth.url}:${service.auth.port}
+              predicates:
+                - Path=/api/v1/auth/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: auth-service
+                    fallbackUri: forward:/fallback/auth
+
+            # Image Service - 이미지 업로드/조회
+            - id: image-service
+              uri: http://${service.image.url}:${service.image.port}
+              predicates:
+                - Path=/api/v1/images/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: image-service
+
+            # Place Info Service - 업체 정보 관리
+            - id: place-info-service
+              uri: http://${service.place-info.url}:${service.place-info.port}
+              predicates:
+                - Path=/api/v1/places/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: place-service
+
+            # Room Info Service - 룸 정보 관리
+            - id: room-info-service
+              uri: http://${service.room-info.url}:${service.room-info.port}
+              predicates:
+                - Path=/api/v1/rooms/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: room-service
+
+            # Lee Yong Gwan Lee Service - 이용권 관리
+            - id: lee-yong-gwan-lee-service
+              uri: http://${service.lee-yong-gwan-lee.url}:${service.lee-yong-gwan-lee.port}
+              predicates:
+                - Path=/api/v1/pricing-policies/**, /api/v1/room-reservations/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: reservation-service
+
+            # Ye Yak Hae Yo Service - 예약 처리
+            - id: ye-yak-hae-yo-service
+              uri: http://${service.ye-yak-hae-yo.url}:${service.ye-yak-hae-yo.port}
+              predicates:
+                - Path=/api/v1/reservations/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: reservation-service
+
+            # Ye Yak Manage Service - 예약 관리 (점주용)
+            - id: ye-yak-manage-service
+              uri: http://${service.ye-yak-manage.url}:${service.ye-yak-manage.port}
+              predicates:
+                - Path=/api/v1/reservation-manage/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: reservation-service
+
+            # Coupon Service - 쿠폰 관리
+            - id: coupon-service
+              uri: http://${service.coupon.url}:${service.coupon.port}
+              predicates:
+                - Path=/api/v1/coupons/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: coupon-service
+
+            # Chat Service - 채팅/문의
+            - id: chat-service
+              uri: http://${service.chat.url}:${service.chat.port}
+              predicates:
+                - Path=/api/v1/chats/**, /api/v1/inquiries/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: chat-service
+
+            # Notification Service - 알림
+            - id: notification-service
+              uri: http://${service.notification.url}:${service.notification.port}
+              predicates:
+                - Path=/api/v1/notifications/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: notification-service
+
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+# Service URLs (defaults - override in application-dev.yaml or env vars)
+service:
+  auth:
+    url: ${AUTH_URL:localhost}
+    port: ${AUTH_PORT:8080}
+  image:
+    url: ${IMAGE_URL:localhost}
+    port: ${IMAGE_PORT:8081}
+  place-info:
+    url: ${PLACE_INFO_URL:localhost}
+    port: ${PLACE_INFO_PORT:8082}
+  room-info:
+    url: ${ROOM_INFO_URL:localhost}
+    port: ${ROOM_INFO_PORT:8083}
+  lee-yong-gwan-lee:
+    url: ${LEE_YONG_GWAN_LEE_URL:localhost}
+    port: ${LEE_YONG_GWAN_LEE_PORT:8084}
+  ye-yak-hae-yo:
+    url: ${YE_YAK_HAE_YO_URL:localhost}
+    port: ${YE_YAK_HAE_YO_PORT:8085}
+  ye-yak-manage:
+    url: ${YE_YAK_MANAGE_URL:localhost}
+    port: ${YE_YAK_MANAGE_PORT:8086}
+  coupon:
+    url: ${COUPON_URL:localhost}
+    port: ${COUPON_PORT:8087}
+  chat:
+    url: ${CHAT_URL:localhost}
+    port: ${CHAT_PORT:8088}
+  notification:
+    url: ${NOTIFICATION_URL:localhost}
+    port: ${NOTIFICATION_PORT:8089}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      access: unrestricted
+  health:
+    circuitbreakers:
+      enabled: true
+
+# Gateway Configuration
+gateway:
+  # JWT Configuration
+  jwt:
+    secret: ${JWT_SECRET:your-256-bit-secret-key-for-placeowner-gateway-minimum-32-chars}
+
+  # Rate Limiting Configuration
+  rate-limit:
+    enabled: true
+    default-policy:
+      limit: 100
+      duration: 1m
+      burst-capacity: 120
+    endpoints:
+      /api/v1/reservations:
+        limit: 30
+        duration: 1m
+        burst-capacity: 40
+      /api/v1/places:
+        limit: 50
+        duration: 1m
+        burst-capacity: 60
+
+# Circuit Breaker Configuration (Resilience4j)
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold: 3s
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+        ignore-exceptions:
+          - com.teambind.springproject.exception.CustomException
+    instances:
+      auth-service:
+        base-config: default
+      image-service:
+        base-config: default
+      place-service:
+        base-config: default
+      room-service:
+        base-config: default
+      reservation-service:
+        base-config: default
+        slow-call-duration-threshold: 5s
+      coupon-service:
+        base-config: default
+      chat-service:
+        base-config: default
+      notification-service:
+        base-config: default
+        failure-rate-threshold: 70
+
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 30s
+        cancel-running-future: true
+    instances:
+      auth-service:
+        base-config: default
+      image-service:
+        base-config: default
+      place-service:
+        base-config: default
+      room-service:
+        base-config: default
+      reservation-service:
+        base-config: default
+        timeout-duration: 60s
+      coupon-service:
+        base-config: default
+      chat-service:
+        base-config: default
+      notification-service:
+        base-config: default

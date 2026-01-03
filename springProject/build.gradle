@@ -1,16 +1,17 @@
 plugins {
     id 'java'
+    id 'groovy'
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.teambind'
 version = '0.0.1-SNAPSHOT'
-description = 'springProject'
+description = 'gateway_palce_owner'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -20,18 +21,67 @@ configurations {
     }
 }
 
+ext {
+    set('springCloudVersion', '2025.0.0')
+    set('jjwtVersion', '0.12.6')
+    set('springdocVersion', '2.7.0')
+}
+
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    // cause -> ObjectMapper
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Omnibus Security Library
+    implementation 'com.omnibus:omnibus-security-header:1.0.0-SNAPSHOT'
+
+    // Spring Cloud Gateway (WebFlux based - Non-blocking, Netty)
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
+
+    // JSON (ObjectMapper)
+    implementation 'org.springframework.boot:spring-boot-starter-json'
+
+    // Actuator (health check)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Redis (cache, rate limiting)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+
+    // Resilience4j (circuit breaker)
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j'
+
+    // JWT (jjwt)
+    implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Swagger (springdoc-openapi for WebFlux)
+    implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:${springdocVersion}"
+
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Spock + Groovy
+    testImplementation 'org.spockframework:spock-core:2.4-M4-groovy-4.0'
+    testImplementation 'org.spockframework:spock-spring:2.4-M4-groovy-4.0'
+    testImplementation 'org.apache.groovy:groovy-all:4.0.24'
 }
 
 tasks.named('test') {
