@@ -45,6 +45,7 @@ spring:
                 - name: CircuitBreaker
                   args:
                     name: place-service
+                    fallbackUri: forward:/fallback/place
 
             # Room Info Service - 룸 정보 관리
             - id: room-info-service
