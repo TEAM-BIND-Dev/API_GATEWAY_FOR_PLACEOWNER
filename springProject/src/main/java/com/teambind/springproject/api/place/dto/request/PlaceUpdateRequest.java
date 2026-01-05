@@ -1,20 +1,17 @@
 package com.teambind.springproject.api.place.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PlaceRegisterRequest {
+public class PlaceUpdateRequest {
 
-    @NotBlank(message = "장소명은 필수입니다")
     @Size(max = 100, message = "장소명은 100자를 초과할 수 없습니다")
     private String placeName;
 
@@ -28,8 +25,10 @@ public class PlaceRegisterRequest {
     private String placeType;
 
     private ContactInfo contact;
-    private LocationInfo location;
     private ParkingInfo parking;
+
+    @Size(max = 10, message = "키워드는 최대 10개까지 등록 가능합니다")
+    private List<Long> keywordIds;
 
     @Size(max = 10, message = "이미지는 최대 10개까지 등록 가능합니다")
     private List<String> imageIds;
@@ -41,17 +40,6 @@ public class PlaceRegisterRequest {
         private String email;
         private List<String> websites;
         private List<String> socialLinks;
-    }
-
-    @Getter
-    @Builder
-    public static class LocationInfo {
-        private String from;
-        private Map<String, Object> addressData;
-        private Double latitude;
-        private Double longitude;
-        @Size(max = 500, message = "위치 안내는 500자를 초과할 수 없습니다")
-        private String locationGuide;
     }
 
     @Getter
