@@ -105,6 +105,21 @@ public class PlaceFacadeService {
     }
 
     /**
+     * 공간 위치 수정 (단순 프록시)
+     */
+    public Mono<ApiResponse<Map<String, String>>> updateLocation(String placeId, ServerHttpRequest request, Map<String, Object> requestBody) {
+        String userId = request.getHeaders().getFirst("X-User-Id");
+        String appType = request.getHeaders().getFirst("X-App-Type");
+
+        log.info("Location update request - placeId: {}, userId: {}", placeId, userId);
+
+        return placeClient.updateLocation(placeId, userId, appType, requestBody)
+                .map(ApiResponse::ok)
+                .doOnSuccess(r -> log.info("Location updated for placeId: {}", placeId))
+                .doOnError(error -> log.error("Failed to update location for placeId {}: {}", placeId, error.getMessage()));
+    }
+
+    /**
      * 순차 이미지 확정 (등록 성공 후 처리)
      */
     private Mono<PlaceResponse> confirmImagesSequential(PlaceResponse response, List<String> imageIds) {
