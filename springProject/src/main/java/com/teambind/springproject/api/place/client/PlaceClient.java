@@ -75,4 +75,19 @@ public class PlaceClient {
                 .doOnSuccess(response -> log.debug("Place updated: {}", placeId))
                 .doOnError(error -> log.error("Failed to update place {}: {}", placeId, error.getMessage()));
     }
+
+    public Mono<Map<String, String>> updateLocation(String placeId, String userId, String appType, Map<String, Object> requestBody) {
+        log.debug("Updating location for placeId: {}, userId: {}", placeId, userId);
+
+        return placeInfoWebClient.put()
+                .uri("/api/v1/places/{placeId}/locations", placeId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-User-Id", userId)
+                .header("X-App-Type", appType)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, String>>() {})
+                .doOnSuccess(response -> log.debug("Location updated for placeId: {}", placeId))
+                .doOnError(error -> log.error("Failed to update location for placeId {}: {}", placeId, error.getMessage()));
+    }
 }
