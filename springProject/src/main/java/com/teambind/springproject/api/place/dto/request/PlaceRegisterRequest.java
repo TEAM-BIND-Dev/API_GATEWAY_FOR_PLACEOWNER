@@ -31,6 +31,9 @@ public class PlaceRegisterRequest {
     private LocationInfo location;
     private ParkingInfo parking;
 
+    @Size(max = 10, message = "이미지는 최대 10개까지 등록 가능합니다")
+    private List<String> imageIds;
+
     @Getter
     @Builder
     public static class ContactInfo {
