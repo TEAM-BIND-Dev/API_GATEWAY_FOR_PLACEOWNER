@@ -1,0 +1,38 @@
+# Build
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Gradle
+.gradle/
+
+# IDE - IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+
+# IDE - VS Code
+.vscode/
+
+# Claude
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Local config
+*.local
+.env
+.env.*
+!.env.example
