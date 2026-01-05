@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/places")
@@ -50,5 +51,15 @@ public class PlaceController implements PlaceControllerSwagger {
             @Valid @RequestBody PlaceUpdateRequest updateRequest
     ) {
         return placeFacadeService.updatePlace(placeId, request, updateRequest);
+    }
+
+    @Override
+    @PutMapping("/{placeId}/locations")
+    public Mono<ApiResponse<Map<String, String>>> updateLocation(
+            @PathVariable String placeId,
+            ServerHttpRequest request,
+            @RequestBody Map<String, Object> requestBody
+    ) {
+        return placeFacadeService.updateLocation(placeId, request, requestBody);
     }
 }
